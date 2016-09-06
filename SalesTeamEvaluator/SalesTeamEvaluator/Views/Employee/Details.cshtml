@@ -1,0 +1,144 @@
+﻿@using SalesTeamEvaluator.DataAccessLayer
+@using Chart.Mvc.ComplexChart
+@using Chart.Mvc.Extensions
+@using Chart.Mvc.SimpleChart
+@model SalesTeamEvaluator.Models.Employee
+
+@Scripts.Render("~/bundles/chart")
+
+@{
+    ViewBag.Title = "Details";
+
+
+    int grossCommissionAmount = 0;
+    List<double> completeTeamSales = new List<double>();
+    List<double> completeTeamCommissions = new List<double>();
+    Array teamMemberNames = null;
+    using (var context = new SalesReportContext())
+    {
+        var allCommissions = context.Sale.Where(x => x.EmployeeID == Model.ID).ToList();
+        foreach (var commission in allCommissions)
+        {
+            grossCommissionAmount += commission.Commission;
+        }
+        var team = context.Employee.Where(
+                                    x => x.ID > 0).Select(
+                                                    x => x.LastName).ToArray();
+        teamMemberNames = team;
+
+        var teamSales = context.Employee.Where(
+                                        x => x.ID > 0).Select(
+                                                    x => x.Sales.Count()
+                                                    ).ToList();
+
+        foreach (var sale in teamSales)
+        {
+            var cast = (double)sale;
+            completeTeamSales.Add(cast);
+        }
+
+        var modelSales = context.Employee.Where(
+                                        x => x.ID == Model.ID).Select(
+                                                            x => x.Sales.Count());
+
+        foreach(var employee in context.Employee)
+        {
+            var sales = context.Sale.Where(x => x.Employee.ID == employee.ID).ToList();
+            var totalCommissions = new double();
+            foreach(var sale in sales)
+            {
+                totalCommissions += sale.Commission;
+            }
+            totalCommissions = totalCommissions / 1000;
+            completeTeamCommissions.Add(totalCommissions);
+        }
+
+    }
+
+
+
+    ViewBag.GrossCommissions = grossCommissionAmount;
+    ViewBag.TeamSales = completeTeamSales;
+    ViewBag.TeamMembers = teamMemberNames;
+    ViewBag.TeamCommissions = completeTeamCommissions;
+
+}
+
+<!--Html Helper Methods-->
+@helper  formatCommission(int commissionInt) {
+Decimal commissionDecimal = commissionInt;
+string result = String.Format("{0:C}", commissionDecimal);
+<p>@result</p>
+}
+
+@helper displayClosingsChart(List<double> dataValues, IEnumerable<string> labelValues, string title, string id)
+{
+    <h5>@title</h5>
+
+var barChart = new BarChart();
+barChart.ComplexData.Labels.AddRange(labelValues);
+barChart.ComplexData.Datasets.AddRange(new List<ComplexDataset>
+                           {
+                              new ComplexDataset
+                                  {
+                                      Data = dataValues,
+                                      Label = "My First dataset",
+                                      FillColor = "#3ea088",
+                                      StrokeColor = "#3ea088",
+                                      PointColor = "#3ea088",
+                                      PointStrokeColor = "#fff",
+                                      PointHighlightFill = "#3ea088",
+                                      PointHighlightStroke = "rgba(220,220,220,1)",
+                                  }
+                          });
+
+
+
+    <canvas id="@id" width="250" height="250"></canvas>
+    @Html.CreateChart(id, barChart)
+}
+
+<!--Rendered View Contents-->
+
+    <h2>Team Member Details</h2>
+    <hr />
+
+    <dl class="dl-horizontal col-md-4">
+        <dt>
+            Name
+        </dt>
+
+        <dd>
+            @Model.FirstName @Model.LastName 
+        </dd>
+
+        <dt>
+            Total Closings in 2015
+        </dt>
+
+        <dd>
+            @ViewBag.SaleCount
+        </dd>
+
+        <dt>
+            Gross Commissions in 2015
+        </dt>
+
+        <dd>
+            @formatCommission(ViewBag.GrossCommission)
+        </dd>
+    
+    </dl>
+    <div class="col-md-4">
+        @displayClosingsChart(ViewBag.TeamSales, ViewBag.TeamMembers, "Closing Count", "closingCountCanvas")
+    </div>
+    <div class="col-md-4">
+        @displayClosingsChart(ViewBag.TeamCommissions, ViewBag.TeamMembers, "Gross Commissions (In Thousands)", "commissionsCanvas")
+    </div>
+<div>
+    <p>
+        @Html.ActionLink("Edit", "Edit", new { id = Model.ID }) |
+        @Html.ActionLink("Back to List", "Index")
+    </p>
+</div>
+    

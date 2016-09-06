@@ -1,0 +1,64 @@
+﻿@model SalesTeamEvaluator.Models.Sale
+
+@{
+    ViewBag.Title = "Details";
+}
+
+@helper  formatCommission(int commissionInt)
+{
+Decimal commissionDecimal = commissionInt;
+string result = String.Format("{0:C}", commissionDecimal);
+    <span>@result</span>
+}
+
+<h2>Sale Details</h2>
+
+<div>
+    <!--<h4>Sale</h4>-->
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            First Name
+        </dt>
+
+        <dd>
+            @Html.Raw(Model.Employee.FirstName)
+        </dd>
+        <dt>
+            Last Name
+        </dt>
+
+        <dd>
+            @Html.Raw(Model.Employee.LastName)
+        </dd>
+
+        <dt>
+            Closing Price
+        </dt>
+
+        <dd>
+            @Html.Raw(formatCommission(Model.TotalSaleAmount))
+        </dd>
+
+        <dt>
+            Commission
+        </dt>
+
+        <dd>
+            @Html.Raw(formatCommission(Model.Commission))
+        </dd>
+
+        <dt>
+            Date
+        </dt>
+
+        <dd>
+            @Html.Raw(Model.Date.ToShortDateString())
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.ID }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

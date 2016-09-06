@@ -1,0 +1,64 @@
+﻿@using SalesTeamEvaluator.DataAccessLayer
+@using SalesTeamEvaluator.Models
+@model IEnumerable<SalesTeamEvaluator.Models.Sale>
+
+@{
+    ViewBag.Title = "Index";
+
+}
+
+@helper  formatCommission(int commissionInt)
+{
+Decimal commissionDecimal = commissionInt;
+string result = String.Format("{0:C}", commissionDecimal);
+    <p>@result</p>
+}
+
+
+<h2>Sales List</h2>
+
+<p>
+    @Html.ActionLink("Add a Sale Record", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            Name
+        </th>
+        <th>
+            Closing Price
+        </th>
+        <th>
+            Commission
+        </th>
+        <th>
+            Date
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @item.Employee.FirstName @item.Employee.LastName          
+        </td>
+        <td>
+            @Html.Raw(item.TotalSaleAmount.ToString().Insert(item.TotalSaleAmount.ToString().Count(), ".00").Insert(item.TotalSaleAmount.ToString().Count() - 3, ",").Insert(0, "$"))
+        </td>
+        <td>
+            <!--Format Dollar amount for UI-->
+            @Html.Raw(item.Commission.ToString().Insert(item.Commission.ToString().Count(), ".00").Insert(item.Commission.ToString().Count() - 3, ",").Insert(0, "$"))
+        </td>
+        <td>
+            <!--Format Short Date string-->
+            @Html.Raw(item.Date.ToShortDateString())
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.ID }) |
+            @Html.ActionLink("Details", "Details", new { id=item.ID }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.ID })
+        </td>
+    </tr>
+}
+
+</table>
